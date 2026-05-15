@@ -1,0 +1,1369 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ADM Worksheet — Aviation Decision-Making</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            --bg: #080c14;
+            --panel: #0d1421;
+            --border: #1a2a45;
+            --accent: #00c8ff;
+            --accent2: #0066ff;
+            --low: #00e87a;
+            --medium: #ffb800;
+            --high: #ff3a3a;
+            --text: #c8d8f0;
+            --muted: #4a6080;
+            --white: #e8f0ff;
+            --card: #0f1928;
+            --go: #00e87a;
+            --nogo: #ff3a3a;
+            --review: #ffb800;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background-image: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,100,200,.12) 0%, transparent 70%), repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,200,255,.03) 39px, rgba(0,200,255,.03) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,200,255,.03) 39px, rgba(0,200,255,.03) 40px);
+        }
+
+        /* ── Header ─────────────────────────────────────────────── */
+        header {
+            background: linear-gradient(180deg, rgba(0,20,50,.95) 0%, rgba(8,12,20,.98) 100%);
+            border-bottom: 1px solid var(--accent2);
+            padding: 14px 32px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 40px rgba(0,100,255,.15);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(0,200,255,.5);
+        }
+
+            .logo span {
+                color: var(--accent2);
+            }
+
+        .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .7rem;
+            color: var(--muted);
+            letter-spacing: 2px;
+        }
+
+        .pilot-badge {
+            margin-left: auto;
+            background: rgba(0,100,200,.15);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .75rem;
+            color: var(--accent);
+            display: none;
+        }
+
+        /* ── Progress Bar ────────────────────────────────────────── */
+        .progress-bar {
+            background: rgba(0,10,30,.8);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            display: flex;
+            gap: 0;
+            display: none;
+        }
+
+        .step-tab {
+            padding: 10px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .68rem;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            border-bottom: 2px solid transparent;
+            cursor: default;
+            transition: all .3s;
+            white-space: nowrap;
+        }
+
+            .step-tab.active {
+                color: var(--accent);
+                border-bottom-color: var(--accent);
+            }
+
+            .step-tab.done {
+                color: var(--low);
+                border-bottom-color: var(--low);
+            }
+
+        /* ── Main container ──────────────────────────────────────── */
+        main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* ── Screen management ───────────────────────────────────── */
+        .screen {
+            display: none;
+        }
+
+            .screen.active {
+                display: block;
+                animation: fadeIn .4s ease;
+            }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* ── Section header ──────────────────────────────────────── */
+        .section-header {
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-tag {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .65rem;
+            letter-spacing: 3px;
+            color: var(--accent2);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 1px;
+        }
+
+        .section-desc {
+            margin-top: 8px;
+            font-size: .85rem;
+            color: var(--muted);
+            line-height: 1.6;
+            max-width: 580px;
+        }
+
+        /* ── Form card ───────────────────────────────────────────── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: border-color .3s;
+        }
+
+            .card:hover {
+                border-color: var(--accent2);
+            }
+
+        .card-label {
+            font-family: 'Orbitron', monospace;
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .card-label .num {
+                width: 22px;
+                height: 22px;
+                background: rgba(0,200,255,.1);
+                border: 1px solid var(--accent);
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: .65rem;
+            }
+
+        .card-desc {
+            font-size: .8rem;
+            color: var(--muted);
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        /* ── Inputs ──────────────────────────────────────────────── */
+        label {
+            font-size: .78rem;
+            color: var(--text);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type=text], input[type=number], input[type=date], textarea {
+            width: 100%;
+            background: rgba(0,0,0,.4);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            font-size: .85rem;
+            transition: border-color .3s;
+            outline: none;
+        }
+
+            input:focus, textarea:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(0,200,255,.08);
+            }
+
+        textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+            .form-row.triple {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        /* ── Risk Selector ───────────────────────────────────────── */
+        .risk-selector {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .risk-btn {
+            flex: 1;
+            padding: 9px 6px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: rgba(0,0,0,.3);
+            color: var(--muted);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .72rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all .25s;
+            text-align: center;
+        }
+
+            .risk-btn[data-level=Low].selected {
+                background: rgba(0,232,122,.12);
+                border-color: var(--low);
+                color: var(--low);
+                box-shadow: 0 0 10px rgba(0,232,122,.2);
+            }
+
+            .risk-btn[data-level=Medium].selected {
+                background: rgba(255,184,0,.12);
+                border-color: var(--medium);
+                color: var(--medium);
+                box-shadow: 0 0 10px rgba(255,184,0,.2);
+            }
+
+            .risk-btn[data-level=High].selected {
+                background: rgba(255,58,58,.12);
+                border-color: var(--high);
+                color: var(--high);
+                box-shadow: 0 0 10px rgba(255,58,58,.2);
+            }
+
+            .risk-btn:hover {
+                border-color: var(--accent2);
+                color: var(--accent);
+            }
+
+        /* ── Options list (DECIDE-Consider) ─────────────────────── */
+        .options-list {
+            list-style: none;
+            margin-bottom: 10px;
+        }
+
+            .options-list li {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                background: rgba(0,0,0,.25);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 8px 12px;
+                font-family: 'Share Tech Mono', monospace;
+                font-size: .78rem;
+                color: var(--accent);
+            }
+
+                .options-list li .del-btn {
+                    margin-left: auto;
+                    cursor: pointer;
+                    color: var(--high);
+                    font-size: .9rem;
+                    background: none;
+                    border: none;
+                    padding: 0 4px;
+                }
+
+        .add-option-row {
+            display: flex;
+            gap: 8px;
+        }
+
+            .add-option-row input {
+                flex: 1;
+            }
+
+        /* ── Buttons ─────────────────────────────────────────────── */
+        .btn {
+            padding: 12px 28px;
+            border-radius: 7px;
+            font-family: 'Orbitron', monospace;
+            font-size: .75rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border: none;
+            transition: all .25s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: #000;
+            box-shadow: 0 4px 20px rgba(0,100,255,.3);
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 28px rgba(0,200,255,.4);
+            }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+
+            .btn-outline:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: .65rem;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            align-items: center;
+        }
+
+        /* ── Risk Badge ──────────────────────────────────────────── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .72rem;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+            .badge.low {
+                background: rgba(0,232,122,.15);
+                color: var(--low);
+                border: 1px solid var(--low);
+            }
+
+            .badge.medium {
+                background: rgba(255,184,0,.15);
+                color: var(--medium);
+                border: 1px solid var(--medium);
+            }
+
+            .badge.high {
+                background: rgba(255,58,58,.15);
+                color: var(--high);
+                border: 1px solid var(--high);
+            }
+
+        /* ── Final Report ────────────────────────────────────────── */
+        .go-banner {
+            border-radius: 12px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
+            text-align: center;
+            border: 2px solid;
+        }
+
+            .go-banner.go {
+                background: rgba(0,232,122,.07);
+                border-color: var(--go);
+            }
+
+            .go-banner.nogo {
+                background: rgba(255,58,58,.07);
+                border-color: var(--nogo);
+            }
+
+            .go-banner.review {
+                background: rgba(255,184,0,.07);
+                border-color: var(--review);
+            }
+
+        .go-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: 6px;
+            margin-bottom: 10px;
+        }
+
+        .go-banner.go .go-label {
+            color: var(--go);
+            text-shadow: 0 0 30px rgba(0,232,122,.5);
+        }
+
+        .go-banner.nogo .go-label {
+            color: var(--nogo);
+            text-shadow: 0 0 30px rgba(255,58,58,.5);
+        }
+
+        .go-banner.review .go-label {
+            color: var(--review);
+            text-shadow: 0 0 30px rgba(255,184,0,.5);
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .report-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+
+            .report-item .ri-label {
+                font-family: 'Share Tech Mono', monospace;
+                font-size: .65rem;
+                color: var(--muted);
+                letter-spacing: 2px;
+                margin-bottom: 6px;
+            }
+
+            .report-item .ri-value {
+                font-size: .9rem;
+                color: var(--white);
+                font-weight: 500;
+            }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem;
+            margin-bottom: 20px;
+        }
+
+            .summary-table th {
+                font-family: 'Share Tech Mono', monospace;
+                font-size: .65rem;
+                letter-spacing: 2px;
+                color: var(--muted);
+                padding: 8px 12px;
+                text-align: left;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .summary-table td {
+                padding: 9px 12px;
+                border-bottom: 1px solid rgba(26,42,69,.5);
+                color: var(--text);
+            }
+
+            .summary-table tr:last-child td {
+                border-bottom: none;
+            }
+
+        /* ── Alert ───────────────────────────────────────────────── */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 7px;
+            font-size: .82rem;
+            margin-bottom: 16px;
+            display: none;
+            animation: fadeIn .3s ease;
+        }
+
+            .alert.error {
+                background: rgba(255,58,58,.1);
+                border: 1px solid var(--high);
+                color: var(--high);
+            }
+
+            .alert.success {
+                background: rgba(0,232,122,.1);
+                border: 1px solid var(--low);
+                color: var(--low);
+            }
+
+            .alert.show {
+                display: block;
+            }
+
+        /* ── Pilot registration screen ───────────────────────────── */
+        .splash {
+            text-align: center;
+            padding: 60px 0 40px;
+        }
+
+        .splash-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(0,200,255,.4));
+        }
+
+        .splash-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--white);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .splash-sub {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .75rem;
+            color: var(--muted);
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 24px 0;
+        }
+
+        .info-box {
+            background: rgba(0,100,255,.07);
+            border: 1px solid rgba(0,100,255,.2);
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: .8rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+            .info-box strong {
+                color: var(--accent);
+            }
+
+        /* ── Loading ─────────────────────────────────────────────── */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--muted);
+            font-family: 'Share Tech Mono',monospace;
+            font-size: .8rem;
+        }
+
+            .loading.show {
+                display: block;
+            }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media(max-width:600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 1.15rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <div class="logo">ADM<span>//</span>WORKSHEET</div>
+            <div class="subtitle">AVIATION DECISION-MAKING SYSTEM</div>
+        </div>
+        <div class="pilot-badge" id="pilotBadge">✈ <span id="pilotBadgeName"></span></div>
+    </header>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="step-tab active" id="tab1">01 · PILOT REG</div>
+        <div class="step-tab" id="tab2">02 · IMSAFE</div>
+        <div class="step-tab" id="tab3">03 · PAVE</div>
+        <div class="step-tab" id="tab4">04 · DECIDE</div>
+        <div class="step-tab" id="tab5">05 · REPORT</div>
+    </div>
+
+    <main>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- SCREEN 1 — Pilot Registration                            -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div class="screen active" id="screen1">
+            <div class="splash">
+                <div class="splash-icon">✈</div>
+                <div class="splash-title">ADM WORKSHEET</div>
+                <div class="splash-sub">AVIATION DECISION-MAKING · FAASTeam ADM/GRM SYSTEM</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">PILOT REGISTRATION</div>
+                <div class="card-desc">Enter your personal data. This information will be linked to your ADM session and included in the final report.</div>
+
+                <div id="alertReg" class="alert error"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="regName" placeholder="e.g. Ahmed Mohamed" />
+                    </div>
+                    <div class="form-group">
+                        <label>Age *</label>
+                        <input type="number" id="regAge" placeholder="e.g. 35" min="16" max="99" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>License Number *</label>
+                        <input type="text" id="regLicense" placeholder="e.g. GCAA-PIL-00123" />
+                    </div>
+                    <div class="form-group">
+                        <label>Total Flight Hours *</label>
+                        <input type="number" id="regHours" placeholder="e.g. 1200" min="0" step="0.5" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Flight Date *</label>
+                    <input type="date" id="regFlightDate" />
+                </div>
+
+                <div class="action-row">
+                    <button class="btn btn-primary" onclick="registerPilot()">START SESSION →</button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="info-box">
+                <strong>About this system:</strong> This tool implements the <strong>IMSAFE + PAVE + DECIDE</strong> framework from the FAASTeam ADM/GRM seminar. Complete all three checklists to receive a Go/No-Go recommendation based on the GRM risk matrix.
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- SCREEN 2 — IMSAFE Checklist                              -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div class="screen" id="screen2">
+            <div class="section-header">
+                <div class="section-tag">STEP 02 OF 04 · SELF-ASSESSMENT</div>
+                <div class="section-title">IMSAFE CHECKLIST</div>
+                <div class="section-desc">Rate each factor as Low / Medium / High risk. Any single "High" rating is a potential Go/No-Go decision point per the PAVE framework under "Pilot."</div>
+            </div>
+
+            <div id="alertImsafe" class="alert error"></div>
+
+            <!-- 1. Illness -->
+            <div class="card">
+                <div class="card-label"><span class="num">I</span> ILLNESS</div>
+                <div class="card-desc">Evaluate current health issues that could impair judgment or physical performance. Ask: "Do I have symptoms (fever, congestion, dizziness) that could worsen under flight stress?"</div>
+                <label>Risk Rating</label>
+                <div class="risk-selector" data-field="illness">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label>Notes / Symptoms</label>
+                    <textarea id="illnessNotes" placeholder="Describe any current symptoms or health concerns..."></textarea>
+                </div>
+            </div>
+
+            <!-- 2. Medication -->
+            <div class="card">
+                <div class="card-label"><span class="num">M</span> MEDICATION</div>
+                <div class="card-desc">List every medication and check FAA-approved aeromedical guidance. Consider: drowsiness, blurred vision, nausea. Even "mild" meds can raise severity in the GRM matrix.</div>
+                <label>Risk Rating</label>
+                <div class="risk-selector" data-field="medication">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label>Medications / Side-effects Notes</label>
+                    <textarea id="medicationNotes" placeholder="List medications and potential side-effects..."></textarea>
+                </div>
+            </div>
+
+            <!-- 3. Stress -->
+            <div class="card">
+                <div class="card-label"><span class="num">S</span> STRESS</div>
+                <div class="card-desc">High stress drains cognitive bandwidth. Rate: low (manageable), medium (occasional distraction), high (constant preoccupation). In GRM: high stress + marginal weather = unacceptable risk.</div>
+                <label>Risk Rating</label>
+                <div class="risk-selector" data-field="stress">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label>Stressor Notes</label>
+                    <textarea id="stressNotes" placeholder="Identify major stressors: work, family, financial concerns..."></textarea>
+                </div>
+            </div>
+
+            <!-- 4. Alcohol -->
+            <div class="card">
+                <div class="card-label"><span class="num">A</span> ALCOHOL</div>
+                <div class="card-desc">FAA mandates at least 8 hours "bottle to throttle," but residual effects may linger longer. Enforce personal minimums beyond regulatory minimums. If in doubt → High risk.</div>
+                <label>Risk Rating</label>
+                <div class="risk-selector" data-field="alcohol">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label>Notes (last drink time, residual assessment)</label>
+                    <textarea id="alcoholNotes" placeholder="Confirm last drink time and residual impairment assessment..."></textarea>
+                </div>
+            </div>
+
+            <!-- 5. Fatigue -->
+            <div class="card">
+                <div class="card-label"><span class="num">F</span> FATIGUE</div>
+                <div class="card-desc">Fatigue undermines every phase of flight — treat it as seriously as any mechanical failure. Note hours slept in the past 24 hours and quality of rest. Revisit at top-of-descent.</div>
+                <label>Risk Rating</label>
+                <div class="risk-selector" data-field="fatigue">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label>Fatigue Notes (hours slept, rest quality)</label>
+                    <textarea id="fatigueNotes" placeholder="Hours slept in last 24h, rest quality, recent duty periods..."></textarea>
+                </div>
+            </div>
+
+            <!-- 6. Emotion -->
+            <div class="card">
+                <div class="card-label"><span class="num">E</span> EMOTIONS</div>
+                <div class="card-desc">Emotional volatility (anger, grief, excitement) can hijack rational decision-making. Rate: low (neutral), medium (distracted), high (volatile). Call out emotional state in the cockpit and reenter the DECIDE loop.</div>
+                <label>Risk Rating</label>
+                <div class="risk-selector" data-field="emotion">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label>Emotional State Notes</label>
+                    <textarea id="emotionNotes" placeholder="Recent emotional events: conflicts, celebrations, distractions..."></textarea>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn btn-outline" onclick="goTo(1)">← BACK</button>
+                <button class="btn btn-primary" onclick="submitImsafe()">SAVE & CONTINUE →</button>
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- SCREEN 3 — PAVE Checklist                                -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div class="screen" id="screen3">
+            <div class="section-header">
+                <div class="section-tag">STEP 03 OF 04 · PREFLIGHT RISK</div>
+                <div class="section-title">PAVE CHECKLIST</div>
+                <div class="section-desc">Systematically assess Pilot, Aircraft, enVironment, and External Pressures before and during flight to build a robust risk-management habit.</div>
+            </div>
+
+            <div id="alertPave" class="alert error"></div>
+
+            <!-- Pilot Element -->
+            <div class="card">
+                <div class="card-label">P — PILOT</div>
+                <div class="card-desc">Centers on your personal readiness and proficiency. IMSAFE check, recent training, currency with aircraft type, avionics, and emergency procedures, and personal minimums (e.g., crosswind limits, night takeoff minima).</div>
+                <label>Pilot Readiness Notes</label>
+                <textarea id="pilotReadinessNotes" placeholder="Recent training, currency, familiarity with aircraft type, personal minimums..."></textarea>
+                <label style="margin-top:12px;">Risk Rating</label>
+                <div class="risk-selector" data-field="pilotRating">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+            </div>
+
+            <!-- Aircraft Element -->
+            <div class="card">
+                <div class="card-label">A — AIRCRAFT</div>
+                <div class="card-desc">Addresses condition and performance capabilities. Verify airworthiness documents, preflight inspection (fuel, oil, control surfaces, tires), weight &amp; balance, and POH performance charts for takeoff, climb, cruise, and landing.</div>
+                <label>Aircraft Condition Notes</label>
+                <textarea id="aircraftConditionNotes" placeholder="Airworthiness documents, preflight inspection findings, W&B, performance charts review..."></textarea>
+                <label style="margin-top:12px;">Risk Rating</label>
+                <div class="risk-selector" data-field="aircraftRating">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+            </div>
+
+            <!-- enVironment Element -->
+            <div class="card">
+                <div class="card-label">V — eNVIRONMENT</div>
+                <div class="card-desc">Examines all external flight conditions: weather, terrain, airports, airspace. Obtain full weather briefing (METARs, TAFs, winds aloft, AIRMETs/SIGMETs), NOTAMs, TFRs, terrain clearance, and plan alternates.</div>
+                <label>Environment Status Notes</label>
+                <textarea id="environmentStatusNotes" placeholder="Weather briefing, NOTAMs, TFRs, terrain elevation, alternate airports..."></textarea>
+                <label style="margin-top:12px;">Risk Rating</label>
+                <div class="risk-selector" data-field="environmentRating">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+            </div>
+
+            <!-- External Pressures Element -->
+            <div class="card">
+                <div class="card-label">E — EXTERNAL PRESSURES</div>
+                <div class="card-desc">Human factor influences: passenger expectations, time pressures, business demands, personal ambitions. Build contingency plans. Establish a no-guilt Go/No-Go decision point and stick to it.</div>
+                <label>External Pressures Notes</label>
+                <textarea id="externalPressuresNotes" placeholder="Passenger expectations, schedules, personal goals, contingency plans..."></textarea>
+                <label style="margin-top:12px;">Risk Rating</label>
+                <div class="risk-selector" data-field="externalRating">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn btn-outline" onclick="goTo(2)">← BACK</button>
+                <button class="btn btn-primary" onclick="submitPave()">SAVE & CONTINUE →</button>
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- SCREEN 4 — DECIDE Model                                  -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div class="screen" id="screen4">
+            <div class="section-header">
+                <div class="section-tag">STEP 04 OF 04 · IN-FLIGHT DECISION</div>
+                <div class="section-title">ENHANCED DECIDE MODEL</div>
+                <div class="section-desc">A dynamic, self-correcting decision cycle: Detect → Evaluate → Consider → Integrate → Decide → Execute &amp; Reassess. Complete all six steps.</div>
+            </div>
+
+            <div id="alertDecide" class="alert error"></div>
+
+            <!-- 1. Detect -->
+            <div class="card">
+                <div class="card-label"><span class="num">1</span> DETECT</div>
+                <div class="card-desc">Maintain continuous, methodical vigilance. Systematic scan of every flight domain: external (weather cells, traffic, terrain), internal (fuel state, systems), and personal (IMSAFE). Cross-check instruments every 20–30 seconds. Log emerging hazards on your kneeboard.</div>
+                <label>Detected Hazards / Observations</label>
+                <textarea id="detectNotes" placeholder="List detected hazards: e.g. 'Turb at FL080', 'FUEL LOF soon', unexpected cloud buildup..."></textarea>
+                <label style="margin-top:12px;">Detection Risk Rating</label>
+                <div class="risk-selector" data-field="detectRating">
+                    <button class="risk-btn" data-level="Low" onclick="selectRisk(this)">▲ LOW</button>
+                    <button class="risk-btn" data-level="Medium" onclick="selectRisk(this)">▲ MEDIUM</button>
+                    <button class="risk-btn" data-level="High" onclick="selectRisk(this)">▲ HIGH</button>
+                </div>
+            </div>
+
+            <!-- 2. Evaluate -->
+            <div class="card">
+                <div class="card-label"><span class="num">2</span> EVALUATE</div>
+                <div class="card-desc">Two-dimensional GRM risk assessment: Severity (how big an upset or injury could be) × Likelihood (how probable is that outcome). The system computes your Risk Score automatically from the matrix.</div>
+                <div class="form-row">
+                    <div>
+                        <label>Severity</label>
+                        <div class="risk-selector" data-field="evalSeverity">
+                            <button class="risk-btn" data-level="Low" onclick="selectRisk(this); computeRiskScore()">▲ LOW</button>
+                            <button class="risk-btn" data-level="Medium" onclick="selectRisk(this); computeRiskScore()">▲ MEDIUM</button>
+                            <button class="risk-btn" data-level="High" onclick="selectRisk(this); computeRiskScore()">▲ HIGH</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Likelihood</label>
+                        <div class="risk-selector" data-field="evalLikelihood">
+                            <button class="risk-btn" data-level="Low" onclick="selectRisk(this); computeRiskScore()">▲ LOW</button>
+                            <button class="risk-btn" data-level="Medium" onclick="selectRisk(this); computeRiskScore()">▲ MEDIUM</button>
+                            <button class="risk-btn" data-level="High" onclick="selectRisk(this); computeRiskScore()">▲ HIGH</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top:12px;">
+                    <label>Computed GRM Risk Score</label>
+                    <div id="riskScoreDisplay" style="margin-top:8px; font-family:'Share Tech Mono',monospace; font-size:.85rem; color:var(--muted);">Select Severity and Likelihood to compute score.</div>
+                </div>
+            </div>
+
+            <!-- 3. Consider -->
+            <div class="card">
+                <div class="card-label"><span class="num">3</span> CONSIDER</div>
+                <div class="card-desc">Brainstorm all viable courses of action — do not lock onto the first fix. Generate at least <strong style="color:var(--accent)">3 workable mitigations or alternatives</strong>. Engage your crew or passengers for additional input.</div>
+                <ul class="options-list" id="optionsList"></ul>
+                <div class="add-option-row">
+                    <input type="text" id="newOption" placeholder="Enter a course of action..." onkeydown="if(event.key==='Enter'){addOption();}" />
+                    <button class="btn btn-outline btn-sm" onclick="addOption()">+ ADD</button>
+                </div>
+                <div style="margin-top:8px; font-size:.75rem; color:var(--muted);" id="optionCount">0 options added (minimum 3 required)</div>
+            </div>
+
+            <!-- 4. Integrate -->
+            <div class="card">
+                <div class="card-label"><span class="num">4</span> INTEGRATE</div>
+                <div class="card-desc">Merge chosen mitigations into a coherent flight plan. Balance against aircraft limits (weight &amp; balance, climb/descent performance), external constraints (airspace, fuel, approach minima), and sequence tasks into a logical flow.</div>
+                <label>Integration Plan Notes</label>
+                <textarea id="integrateNotes" placeholder="New heading, distance, fuel burn, ETA. ATC clearance details. Updated checklist items, altitudes, frequencies..."></textarea>
+            </div>
+
+            <!-- 5. Decide -->
+            <div class="card">
+                <div class="card-label"><span class="num">5</span> DECIDE</div>
+                <div class="card-desc">Select the single best integrated plan and commit to it. A clear yes/no commitment. Communicate promptly: "I'm diverting to MXY. Heading 180, squawk 1200, time enroute 12 min." A decision is only good if it's shared and executed without hesitation.</div>
+                <label>Selected Action / Decision</label>
+                <textarea id="decideAction" placeholder="State your selected course of action clearly. Include heading, altitude, frequency, ATC communication..."></textarea>
+            </div>
+
+            <!-- 6. Execute & Reassess -->
+            <div class="card">
+                <div class="card-label"><span class="num">6</span> EXECUTE &amp; REASSESS</div>
+                <div class="card-desc">Put your decision into action, then monitor outcomes. Verify plan's effect on safety and schedule. Five minutes after a diversion, run another PAVE scan. If a new hazard emerges, restart DECIDE.</div>
+                <div class="form-group">
+                    <label>Execution Notes</label>
+                    <textarea id="executeNotes" placeholder="Task execution: precise control inputs, checklist discipline, clear call-outs. Verify plan effect..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Reassessment Notes</label>
+                    <textarea id="reassessNotes" placeholder="Post-action PAVE scan results. New hazards detected? Restart DECIDE if needed..."></textarea>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn btn-outline" onclick="goTo(3)">← BACK</button>
+                <button class="btn btn-primary" onclick="submitDecide()">COMPUTE FINAL DECISION →</button>
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- SCREEN 5 — Final Report                                  -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div class="screen" id="screen5">
+            <div class="section-header">
+                <div class="section-tag">FINAL ADM REPORT</div>
+                <div class="section-title">GO / NO-GO DECISION</div>
+                <div class="section-desc">GRM risk matrix result based on all IMSAFE, PAVE, and DECIDE inputs.</div>
+            </div>
+
+            <!-- Go/No-Go Banner -->
+            <div class="go-banner" id="goBanner">
+                <div class="go-label" id="goLabel">—</div>
+                <div id="goSub" style="font-family:'Share Tech Mono',monospace;font-size:.8rem;letter-spacing:2px;opacity:.7;margin-bottom:12px;"></div>
+                <div id="goNotes" style="font-size:.85rem;color:var(--text);max-width:540px;margin:0 auto;line-height:1.7;"></div>
+            </div>
+
+            <!-- Pilot Info -->
+            <div class="card" id="reportPilotCard">
+                <div class="card-label">PILOT INFORMATION</div>
+                <div class="report-grid" id="reportPilotGrid"></div>
+            </div>
+
+            <!-- Risk Summary Table -->
+            <div class="card">
+                <div class="card-label">RISK SUMMARY — ALL FACTORS</div>
+                <table class="summary-table" id="summaryTable">
+                    <thead>
+                        <tr>
+                            <th>CHECKLIST</th>
+                            <th>FACTOR</th>
+                            <th>RISK LEVEL</th>
+                            <th>NOTES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryBody"></tbody>
+                </table>
+            </div>
+
+            <!-- DECIDE Summary -->
+            <div class="card">
+                <div class="card-label">DECIDE PROCESS SUMMARY</div>
+                <div id="decideSummary"></div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn btn-outline" onclick="goTo(4)">← BACK</button>
+                <button class="btn btn-primary" onclick="startNew()">START NEW SESSION</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+// ── State ─────────────────────────────────────────────────────────────────────
+const API = 'http://localhost:5200';  // Same origin
+let state = {
+  pilotId: null,
+  sessionId: null,
+  pilotData: null,
+  options: []
+};
+
+// ── Risk buttons ──────────────────────────────────────────────────────────────
+function selectRisk(btn) {
+  const group = btn.closest('.risk-selector');
+  group.querySelectorAll('.risk-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function getRisk(fieldName) {
+  const group = document.querySelector(`.risk-selector[data-field="${fieldName}"]`);
+  if (!group) return null;
+  const sel = group.querySelector('.risk-btn.selected');
+  return sel ? sel.dataset.level : null;
+}
+
+// ── GRM Risk Score (client preview) ─────────────────────────────────────────
+const GRM = {
+  High:   { High: 'High', Medium: 'High',   Low: 'Medium' },
+  Medium: { High: 'High', Medium: 'Medium', Low: 'Low'    },
+  Low:    { High: 'Medium',Medium: 'Low',   Low: 'Low'    }
+};
+
+function computeRiskScore() {
+  const sev = getRisk('evalSeverity');
+  const lik = getRisk('evalLikelihood');
+  const el = document.getElementById('riskScoreDisplay');
+  if (!sev || !lik) { el.textContent = 'Select Severity and Likelihood to compute score.'; return; }
+  const score = GRM[sev][lik];
+  const cls = score.toLowerCase();
+  el.innerHTML = `GRM Risk Score: <span class="badge ${cls}">${score.toUpperCase()}</span> (Severity: ${sev} × Likelihood: ${lik})`;
+}
+
+// ── Options (Consider step) ───────────────────────────────────────────────────
+function addOption() {
+  const inp = document.getElementById('newOption');
+  const val = inp.value.trim();
+  if (!val) return;
+  state.options.push(val);
+  renderOptions();
+  inp.value = '';
+  inp.focus();
+}
+
+function deleteOption(idx) {
+  state.options.splice(idx, 1);
+  renderOptions();
+}
+
+function renderOptions() {
+  const ul = document.getElementById('optionsList');
+  ul.innerHTML = state.options.map((o, i) =>
+    `<li>✦ ${o} <button class="del-btn" onclick="deleteOption(${i})">✕</button></li>`
+  ).join('');
+  document.getElementById('optionCount').textContent =
+    `${state.options.length} option${state.options.length !== 1 ? 's' : ''} added (minimum 3 required)`;
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach((s, i) => s.classList.toggle('active', i === n - 1));
+  document.querySelectorAll('.step-tab').forEach((t, i) => {
+    t.classList.remove('active', 'done');
+    if (i + 1 === n) t.classList.add('active');
+    else if (i + 1 < n) t.classList.add('done');
+  });
+  document.getElementById('progressBar').style.display = n > 1 ? 'flex' : 'none';
+  window.scrollTo(0, 0);
+}
+
+function showAlert(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+// ── API helpers ───────────────────────────────────────────────────────────────
+async function post(url, body) {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(t || `HTTP ${r.status}`);
+  }
+  return r.json();
+}
+
+async function get(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ── Screen 1 — Register pilot ─────────────────────────────────────────────────
+async function registerPilot() {
+  const name    = document.getElementById('regName').value.trim();
+  const age     = parseInt(document.getElementById('regAge').value);
+  const license = document.getElementById('regLicense').value.trim();
+  const hours   = parseFloat(document.getElementById('regHours').value);
+  const date    = document.getElementById('regFlightDate').value;
+
+  if (!name || !age || !license || isNaN(hours) || !date) {
+    showAlert('alertReg', 'All fields are required.'); return;
+  }
+
+  try {
+    const pilot = await post(`${API}/api/pilots`, { name, age, licenseNumber: license, totalFlightHours: hours });
+    state.pilotId = pilot.id;
+    state.pilotData = pilot;
+
+    const session = await post(`${API}/api/sessions`, { pilotId: pilot.id, flightDate: date });
+    state.sessionId = session.id;
+
+    document.getElementById('pilotBadge').style.display = 'block';
+    document.getElementById('pilotBadgeName').textContent = name;
+
+    goTo(2);
+  } catch(e) {
+    showAlert('alertReg', 'Error: ' + e.message);
+  }
+}
+
+// ── Screen 2 — IMSAFE ─────────────────────────────────────────────────────────
+async function submitImsafe() {
+  const fields = ['illness','medication','stress','alcohol','fatigue','emotion'];
+  for (const f of fields) {
+    if (!getRisk(f)) { showAlert('alertImsafe', `Please rate: ${f.toUpperCase()}`); return; }
+  }
+  try {
+    await post(`${API}/api/imsafe`, {
+      sessionId:        state.sessionId,
+      illnessRating:    getRisk('illness'),
+      illnessNotes:     document.getElementById('illnessNotes').value,
+      medicationRating: getRisk('medication'),
+      medicationNotes:  document.getElementById('medicationNotes').value,
+      stressRating:     getRisk('stress'),
+      stressNotes:      document.getElementById('stressNotes').value,
+      alcoholRating:    getRisk('alcohol'),
+      alcoholNotes:     document.getElementById('alcoholNotes').value,
+      fatigueRating:    getRisk('fatigue'),
+      fatigueNotes:     document.getElementById('fatigueNotes').value,
+      emotionRating:    getRisk('emotion'),
+      emotionNotes:     document.getElementById('emotionNotes').value
+    });
+    goTo(3);
+  } catch(e) {
+    showAlert('alertImsafe', 'Error: ' + e.message);
+  }
+}
+
+// ── Screen 3 — PAVE ───────────────────────────────────────────────────────────
+async function submitPave() {
+  const fields = [['pilotRating','Pilot'],['aircraftRating','Aircraft'],['environmentRating','Environment'],['externalRating','External Pressures']];
+  for (const [f, label] of fields) {
+    if (!getRisk(f)) { showAlert('alertPave', `Please rate: ${label}`); return; }
+  }
+  try {
+    await post(`${API}/api/pave`, {
+      sessionId:               state.sessionId,
+      pilotReadinessNotes:     document.getElementById('pilotReadinessNotes').value,
+      pilotRating:             getRisk('pilotRating'),
+      aircraftConditionNotes:  document.getElementById('aircraftConditionNotes').value,
+      aircraftRating:          getRisk('aircraftRating'),
+      environmentStatusNotes:  document.getElementById('environmentStatusNotes').value,
+      environmentRating:       getRisk('environmentRating'),
+      externalPressuresNotes:  document.getElementById('externalPressuresNotes').value,
+      externalPressuresRating: getRisk('externalRating')
+    });
+    goTo(4);
+  } catch(e) {
+    showAlert('alertPave', 'Error: ' + e.message);
+  }
+}
+
+// ── Screen 4 — DECIDE ─────────────────────────────────────────────────────────
+async function submitDecide() {
+  if (!getRisk('detectRating'))    { showAlert('alertDecide', 'Please rate the Detect step.'); return; }
+  if (!getRisk('evalSeverity'))    { showAlert('alertDecide', 'Please select Severity in Evaluate step.'); return; }
+  if (!getRisk('evalLikelihood'))  { showAlert('alertDecide', 'Please select Likelihood in Evaluate step.'); return; }
+  if (state.options.length < 3)   { showAlert('alertDecide', 'Consider step requires at least 3 options.'); return; }
+  if (!document.getElementById('decideAction').value.trim()) { showAlert('alertDecide', 'Please complete the Decide step (selected action).'); return; }
+
+  try {
+    await post(`${API}/api/decide`, {
+      sessionId:          state.sessionId,
+      detectNotes:        document.getElementById('detectNotes').value,
+      detectRating:       getRisk('detectRating'),
+      evaluateSeverity:   getRisk('evalSeverity'),
+      evaluateLikelihood: getRisk('evalLikelihood'),
+      considerOptions:    state.options,
+      integrateNotes:     document.getElementById('integrateNotes').value,
+      decideAction:       document.getElementById('decideAction').value,
+      executeNotes:       document.getElementById('executeNotes').value,
+      reassessNotes:      document.getElementById('reassessNotes').value
+    });
+
+    // Compute final decision
+    const final = await post(`${API}/api/finaldecision/${state.sessionId}`, {});
+    const report = await get(`${API}/api/sessions/${state.sessionId}/report`);
+
+    renderReport(report, final);
+    goTo(5);
+  } catch(e) {
+    showAlert('alertDecide', 'Error: ' + e.message);
+  }
+}
+
+// ── Report rendering ──────────────────────────────────────────────────────────
+function riskBadge(level) {
+  const l = (level||'').toLowerCase();
+  return `<span class="badge ${l}">${(level||'').toUpperCase()}</span>`;
+}
+
+function renderReport(report, final) {
+  // Banner
+  const banner = document.getElementById('goBanner');
+  const cls = final.goNoGo === 'Go' ? 'go' : final.goNoGo === 'NoGo' ? 'nogo' : 'review';
+  banner.className = `go-banner ${cls}`;
+  document.getElementById('goLabel').textContent = final.goNoGo === 'NoGo' ? 'NO-GO' : final.goNoGo.toUpperCase();
+  document.getElementById('goSub').textContent = `OVERALL RISK: ${(final.overallRisk||'').toUpperCase()}`;
+  document.getElementById('goNotes').textContent = final.recommendationNotes || '';
+
+  // Pilot info
+  const p = report.pilot;
+  document.getElementById('reportPilotGrid').innerHTML = `
+    <div class="report-item"><div class="ri-label">NAME</div><div class="ri-value">${p.name}</div></div>
+    <div class="report-item"><div class="ri-label">AGE</div><div class="ri-value">${p.age}</div></div>
+    <div class="report-item"><div class="ri-label">LICENSE NUMBER</div><div class="ri-value">${p.licenseNumber}</div></div>
+    <div class="report-item"><div class="ri-label">TOTAL FLIGHT HOURS</div><div class="ri-value">${p.totalFlightHours} hrs</div></div>
+  `;
+
+  // Summary table
+  const im = report.imsafe || {};
+  const pv = report.pave || {};
+  const dc = report.decide || {};
+  const rows = [
+    ['IMSAFE','Illness',      im.illnessRating,    im.illnessNotes],
+    ['IMSAFE','Medication',   im.medicationRating,  im.medicationNotes],
+    ['IMSAFE','Stress',       im.stressRating,      im.stressNotes],
+    ['IMSAFE','Alcohol',      im.alcoholRating,     im.alcoholNotes],
+    ['IMSAFE','Fatigue',      im.fatigueRating,     im.fatigueNotes],
+    ['IMSAFE','Emotions',     im.emotionRating,     im.emotionNotes],
+    ['PAVE','Pilot',          pv.pilotRating,       pv.pilotReadinessNotes],
+    ['PAVE','Aircraft',       pv.aircraftRating,    pv.aircraftConditionNotes],
+    ['PAVE','enVironment',    pv.environmentRating, pv.environmentStatusNotes],
+    ['PAVE','Ext. Pressures', pv.externalPressuresRating, pv.externalPressuresNotes],
+    ['DECIDE','Detect',       dc.detectRating,      dc.detectNotes],
+    ['DECIDE','Evaluate (GRM Risk Score)', dc.evaluateRiskScore, `Severity: ${dc.evaluateSeverity} × Likelihood: ${dc.evaluateLikelihood}`],
+  ];
+
+  document.getElementById('summaryBody').innerHTML = rows.map(([cl,factor,risk,notes]) =>
+    `<tr>
+      <td style="font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--muted)">${cl}</td>
+      <td>${factor}</td>
+      <td>${riskBadge(risk)}</td>
+      <td style="color:var(--muted);font-size:.75rem">${notes||'—'}</td>
+    </tr>`
+  ).join('');
+
+  // DECIDE summary
+  const opts = (dc.considerOptions || []).map((o,i) => `<li style="margin-bottom:6px;">Option ${i+1}: ${o}</li>`).join('');
+  document.getElementById('decideSummary').innerHTML = `
+    <div class="form-group"><strong style="color:var(--accent);font-size:.8rem;">CONSIDER — Courses of Action</strong>
+    <ol style="margin-top:8px;padding-left:20px;font-size:.82rem;color:var(--text);">${opts}</ol></div>
+    <div class="form-group"><strong style="color:var(--accent);font-size:.8rem;">INTEGRATE</strong>
+    <p style="margin-top:6px;font-size:.82rem;color:var(--muted);">${dc.integrateNotes||'—'}</p></div>
+    <div class="form-group"><strong style="color:var(--accent);font-size:.8rem;">DECIDE — Selected Action</strong>
+    <p style="margin-top:6px;font-size:.82rem;color:var(--text);">${dc.decideAction||'—'}</p></div>
+    <div class="form-group"><strong style="color:var(--accent);font-size:.8rem;">EXECUTE</strong>
+    <p style="margin-top:6px;font-size:.82rem;color:var(--muted);">${dc.executeNotes||'—'}</p></div>
+    <div class="form-group"><strong style="color:var(--accent);font-size:.8rem;">REASSESS</strong>
+    <p style="margin-top:6px;font-size:.82rem;color:var(--muted);">${dc.reassessNotes||'—'}</p></div>
+  `;
+}
+
+// ── New session ───────────────────────────────────────────────────────────────
+function startNew() {
+  state = { pilotId: null, sessionId: null, pilotData: null, options: [] };
+  document.getElementById('pilotBadge').style.display = 'none';
+  // Clear all inputs
+  document.querySelectorAll('input[type=text],input[type=number],input[type=date],textarea').forEach(el => el.value = '');
+  document.querySelectorAll('.risk-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('optionsList').innerHTML = '';
+  document.getElementById('optionCount').textContent = '0 options added (minimum 3 required)';
+  document.getElementById('riskScoreDisplay').textContent = 'Select Severity and Likelihood to compute score.';
+  goTo(1);
+}
+
+// Set default flight date to today
+document.getElementById('regFlightDate').value = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
